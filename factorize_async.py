@@ -5,27 +5,32 @@ from concurrent.futures import ProcessPoolExecutor
 
 time_start = time()
 CPU_COUNT = multiprocessing.cpu_count()
+
+# Divide a large number into numbers that are equal 'SEPARATOR'
 SEPARATOR = 1000000
 temp = 0
 
 
 def factorize(number):
-    preliminary_list = []
+    """Find list of divisors by number less than 'SEPARATOR'"""
+    
+    list_of_divisors = []
     
     if number > SEPARATOR:
         for i in range(number-SEPARATOR, number+1):
             if not temp % i:
-                preliminary_list.append(i)        
-    
+                list_of_divisors.append(i)    
     else:
         for i in range(1, number+1):
             if not number % i:
-                preliminary_list.append(i)
+                list_of_divisors.append(i)
                 
-    return preliminary_list
+    return list_of_divisors
 
 
 def factorize_one_number(number):
+    """Divides a number by more 'SEPARATOR'"""
+    
     global temp
     temp = number
     
