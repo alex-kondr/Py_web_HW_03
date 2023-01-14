@@ -1,8 +1,14 @@
-import shutil, sys, time
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
+import multiprocessing, shutil, sys, time
+
 from translit_letters import normalize
 
+
 start = time.time()
+
+CPU_COUNT = multiprocessing.cpu_count()
+EXECUTOR = ProcessPoolExecutor(CPU_COUNT)
 
    
 folder_sort = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("*")
@@ -12,6 +18,7 @@ types_file = {"archives": ('ZIP', 'GZ', 'TAR'),
               "audio": ('MP3', 'OGG', 'WAV', 'AMR'),
               "images": ('JPEG', 'PNG', 'JPG', 'SVG'),
               "video": ('AVI', 'MP4', 'MOV', 'MKV')}
+
 
 def create_folders() -> dict:
     """Creates folders on type"""
@@ -26,6 +33,7 @@ def create_folders() -> dict:
         print(f"Create {name_type_folder}")
 
     return dict_on_type
+
 
 def find_type_file(file: Path) -> str:
     """Finds the file type and returns its name"""
@@ -57,6 +65,7 @@ def move_file(file: Path, new_name: str, type_file: str) -> Path:
 
     return new_file
 
+
 def main():
 
     if not folder_sort.is_dir():
@@ -75,6 +84,8 @@ def main():
 
     for extensions in types_file.values():
         list_of_extensions['known_type'] += extensions
+        
+    EXECUTOR.shutdown()
 
     rm_empty_dir(folder_sort)
     print("Deleted empty folders")
@@ -82,6 +93,7 @@ def main():
     print(f"list_file_on_type: {list_file_on_type}")
     print(f"list_of_extensions: {list_of_extensions}")
     print("Done")
+
 
 def rm_empty_dir(dir: Path):
 
@@ -106,7 +118,7 @@ def sort_file_in_folder(folder: Path, list_file_on_type: dict, unknown_extension
             new_name = normalize(element.name)
             print(f"{element} rename by {new_name}")
             element = element.rename(element.parent.joinpath(new_name))
-            sort_file_in_folder(element, list_file_on_type, unknown_extensions)
+            EXECUTOR.submit(sort_file_in_folder, element, list_file_on_type, unknown_extensions)
 
         else:
             name_file = element.stem
