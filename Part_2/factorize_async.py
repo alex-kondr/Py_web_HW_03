@@ -35,7 +35,7 @@ def factorize_one_number(number):
     separation_numbers = [i for i in range(1, number, SEPARATOR)
                if i > SEPARATOR] + [number]
 
-    with ProcessPoolExecutor(CPU_COUNT) as executor:
+    with ProcessPoolExecutor(CPU_COUNT*2 + 1) as executor:
         for separation_number in separation_numbers:
             futures.append(executor.submit(factorize, separation_number, number))
     
